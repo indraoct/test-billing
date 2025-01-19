@@ -1,0 +1,8 @@
+# Files
+.env
+coverage.*
+
+# Directories
+vendor/
+.idea/
+.vscode/.DS_Store
