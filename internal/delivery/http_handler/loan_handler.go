@@ -1,11 +1,11 @@
 package http_handler
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
 
+	"github.com/labstack/echo/v4"
 	"test-billing/internal/domain"
 )
 
@@ -14,87 +14,81 @@ type Handler struct {
 }
 
 // CreateLoan handles the creation of a new loan
-func (h Handler) CreateLoan(w http.ResponseWriter, r *http.Request) {
+func (h Handler) CreateLoan(c echo.Context) (err error) {
 	var loan domain.Loan
-	err := json.NewDecoder(r.Body).Decode(&loan)
+	err = c.Bind(&loan)
 	if err != nil {
-		http.Error(w, "Invalid request payload", http.StatusBadRequest)
-		return
+		return c.JSON(http.StatusBadRequest, "Invalid request payload")
 	}
 
 	err = h.Opt.LoanService.CreateLoan(&loan)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to create loan: %v", err), http.StatusInternalServerError)
-		return
+		return c.JSON(http.StatusInternalServerError, fmt.Sprintf("Failed to create loan: %v", err))
 	}
 
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(map[string]interface{}{
+	return c.JSON(http.StatusCreated, map[string]interface{}{
 		"message": "Loan created successfully",
 		"loan_id": loan.ID,
 	})
 }
 
 // GetOutstanding handles fetching the outstanding balance of a loan
-func (h Handler) GetOutstanding(w http.ResponseWriter, r *http.Request) {
-	loanID, err := strconv.Atoi(r.URL.Query().Get("loan_id"))
-	if err != nil {
-		http.Error(w, "Invalid loan_id parameter", http.StatusBadRequest)
-		return
+func (h Handler) GetOutstanding(c echo.Context) (err error) {
+	loanID, _ := strconv.Atoi(c.QueryParam("id"))
+	if loanID == 0 {
+		return c.JSON(http.StatusBadRequest, "Invalid loan id parameter")
 	}
 
 	outstanding, err := h.Opt.LoanService.GetOutstanding(loanID)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to fetch outstanding: %v", err), http.StatusInternalServerError)
-		return
+		return c.JSON(http.StatusInternalServerError, fmt.Sprintf("Failed to fetch outstanding: %v", err))
 	}
 
-	json.NewEncoder(w).Encode(map[string]interface{}{
+	return c.JSON(http.StatusOK, map[string]interface{}{
 		"outstanding_balance": outstanding,
 	})
 }
 
 // IsDelinquent checks if a loan is delinquent
-func (h Handler) IsDelinquent(w http.ResponseWriter, r *http.Request) {
-	loanID, err := strconv.Atoi(r.URL.Query().Get("loan_id"))
-	if err != nil {
-		http.Error(w, "Invalid loan_id parameter", http.StatusBadRequest)
-		return
+func (h Handler) IsDelinquent(c echo.Context) (err error) {
+	loanID, _ := strconv.Atoi(c.QueryParam("id"))
+	if loanID == 0 {
+		return c.JSON(http.StatusBadRequest, "Invalid loan id parameter")
 	}
 
 	delinquent, err := h.Opt.LoanService.IsDelinquent(loanID)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to check delinquency: %v", err), http.StatusInternalServerError)
-		return
+		return c.JSON(http.StatusInternalServerError, fmt.Sprintf("Failed to check delinquency: %v", err))
 	}
 
-	json.NewEncoder(w).Encode(map[string]interface{}{
+	return c.JSON(http.StatusOK, map[string]interface{}{
 		"is_delinquent": delinquent,
 	})
 }
 
 // MakePayment handles making a payment towards a loan
-func (h Handler) MakePayment(w http.ResponseWriter, r *http.Request) {
+func (h Handler) MakePayment(c echo.Context) (err error) {
 	type PaymentRequest struct {
-		LoanID int     `json:"loan_id"`
 		Amount float64 `json:"amount"`
 	}
 
+	loanID, _ := strconv.Atoi(c.QueryParam("id"))
+	if loanID == 0 {
+		return c.JSON(http.StatusBadRequest, "Invalid loan id parameter")
+	}
+
 	var paymentReq PaymentRequest
-	err := json.NewDecoder(r.Body).Decode(&paymentReq)
+	err = c.Bind(&paymentReq)
 	if err != nil {
-		http.Error(w, "Invalid request payload", http.StatusBadRequest)
-		return
+		return c.JSON(http.StatusBadRequest, "Invalid request payload")
 	}
 
-	err = h.Opt.LoanService.MakePayment(paymentReq.LoanID, paymentReq.Amount)
+	err = h.Opt.LoanService.MakePayment(loanID, paymentReq.Amount)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to make payment: %v", err), http.StatusInternalServerError)
-		return
+		return c.JSON(http.StatusInternalServerError, fmt.Sprintf("Failed to make payment: %v", err))
 	}
 
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]interface{}{
+	return c.JSON(http.StatusOK, map[string]interface{}{
 		"message": "Payment made successfully",
 	})
 }

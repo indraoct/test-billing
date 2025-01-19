@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"test-billing/commons/constants"
 	"time"
 
 	"test-billing/internal/domain"
@@ -19,7 +20,7 @@ func NewServiceLoan(opt ServiceOptions) LoanService {
 func (s LoanService) CreateLoan(loan *domain.Loan) (err error) {
 	loan.OutstandingBalance = loan.PrincipalAmount + (loan.PrincipalAmount * loan.InterestRate / 100.0)
 	loan.WeeklyPayment = loan.OutstandingBalance / float64(loan.Weeks)
-	loan.Status = "Active"
+	loan.Status = constants.LoanStatusActive
 
 	loanID, err := s.opt.Repository.LoanRepo.CreateLoan(loan)
 	if err != nil {
@@ -33,9 +34,9 @@ func (s LoanService) CreateLoan(loan *domain.Loan) (err error) {
 			LoanID:     loanID,
 			WeekNumber: week,
 			DueDate:    startDate.AddDate(0, 0, week*7),
-			Status:     "Unpaid",
+			Status:     constants.ScheduleUnpaid,
 		}
-		err := s.opt.Repository.LoanRepo.CreateRepaymentSchedule(&schedule)
+		err = s.opt.Repository.LoanRepo.CreateRepaymentSchedule(&schedule)
 		if err != nil {
 			return err
 		}
@@ -63,7 +64,7 @@ func (s LoanService) IsDelinquent(loanID int) (bool, error) {
 	// Count consecutive unpaid weeks
 	consecutiveUnpaid := 0
 	for _, schedule := range schedules {
-		if schedule.Status == "Unpaid" {
+		if schedule.Status == constants.ScheduleUnpaid {
 			consecutiveUnpaid++
 			if consecutiveUnpaid >= 2 {
 				return true, nil
@@ -93,9 +94,9 @@ func (s LoanService) MakePayment(loanID int, amount float64) (err error) {
 	}
 
 	for _, schedule := range schedules {
-		if schedule.Status == "Unpaid" {
+		if schedule.Status == constants.ScheduleUnpaid {
 			// Mark the schedule as paid
-			err = s.opt.Repository.LoanRepo.UpdateRepaymentScheduleStatus(schedule.ID, "Paid")
+			err = s.opt.Repository.LoanRepo.UpdateRepaymentScheduleStatus(schedule.ID, constants.SchedulePaid)
 			if err != nil {
 				return err
 			}

@@ -8,5 +8,9 @@ import (
 func RegisterEchoRoutes(opt options.Options, handler Handler) (echoRoutes *echo.Echo) {
 	echoRoutes = echo.New()
 
-	return echoRoutes
+	echoRoutes.POST("/loans", handler.CreateLoan)
+	echoRoutes.GET("/loans/:id/outstanding", handler.GetOutstanding)
+	echoRoutes.GET("/loans/:id/delinquent", handler.IsDelinquent)
+	echoRoutes.POST("/loans/:id/payments", handler.MakePayment)
+	return
 }
