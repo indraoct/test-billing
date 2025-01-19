@@ -1,0 +1,40 @@
+version: '3'
+services:
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      APP_NAME: Loan Billing Engine
+      APP_TIMEOUT: 30
+      APP_LISTEN_PORT: 8080
+      APP_PRIVATE_KEY_FILE: ../asset/keys/private_key.pem
+      APP_PUBLIC_KEY_FILE: ../asset/keys/public_key.pem
+      APP_JWT_EXPIRED: 1800
+      APP_DATABASE_URL: postgres://indra:pass1234@db:5432/amartha?sslmode=disable
+    depends_on:
+      db:
+        condition: service_healthy
+  db:
+    platform: linux/x86_64
+    image: postgres:14.1-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: indra
+      POSTGRES_PASSWORD: pass1234
+      POSTGRES_DB: amartha
+    ports:
+      - 5432:5432
+    expose:
+      - 5432
+    volumes:
+      - ../assets/db/db.sql:/docker-entrypoint-initdb.d/db.sql
+    healthcheck:
+      test: ["CMD-SHELL", "sh -c 'pg_isready -U indra -d amartha'"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    command: ["postgres", "-c", "listen_addresses=*"]
+volumes:
+  db:
+    driver: local
