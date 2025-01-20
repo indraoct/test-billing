@@ -34,7 +34,10 @@ func (h Handler) CreateLoan(c echo.Context) (err error) {
 
 // GetOutstanding handles fetching the outstanding balance of a loan
 func (h Handler) GetOutstanding(c echo.Context) (err error) {
-	loanID, _ := strconv.Atoi(c.QueryParam("id"))
+
+	fmt.Println("Test param", c.Param("id"))
+
+	loanID, _ := strconv.Atoi(c.Param("id"))
 	if loanID == 0 {
 		return c.JSON(http.StatusBadRequest, "Invalid loan id parameter")
 	}
@@ -51,7 +54,7 @@ func (h Handler) GetOutstanding(c echo.Context) (err error) {
 
 // IsDelinquent checks if a loan is delinquent
 func (h Handler) IsDelinquent(c echo.Context) (err error) {
-	loanID, _ := strconv.Atoi(c.QueryParam("id"))
+	loanID, _ := strconv.Atoi(c.Param("id"))
 	if loanID == 0 {
 		return c.JSON(http.StatusBadRequest, "Invalid loan id parameter")
 	}
@@ -72,7 +75,7 @@ func (h Handler) MakePayment(c echo.Context) (err error) {
 		Amount float64 `json:"amount"`
 	}
 
-	loanID, _ := strconv.Atoi(c.QueryParam("id"))
+	loanID, _ := strconv.Atoi(c.Param("id"))
 	if loanID == 0 {
 		return c.JSON(http.StatusBadRequest, "Invalid loan id parameter")
 	}
