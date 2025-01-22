@@ -13,6 +13,8 @@ For some purpose
     3. Before you run the workflow of system, you should read the "System Design for Loan Billing Engine" to know the big picture of this app.
     4. There is postman collection on this application you can test it using postman.
     5. For dummy data and authentication i just put 2 model auth (dummy) there are : admin-token and user-token. In this application i just prepare 1 customer : customer_id : John Doe (because i dont have may times to do this test)
+    6. The notification process is still dummy (in the real case should using kafka/rabbitmq).
+    7. The application maybe not perfect but I already do the best that I could due to limited time and my schedule on my current weekday working time is tight. Hope you can understand well about my work. Thanks :)
 
 ## System Design for Loan Billing Engine
 
