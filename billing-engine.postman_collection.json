@@ -106,7 +106,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"customer_id\": 1,\n  \"loan_amount\": 5000000,\n  \"interest_rate\": 10,\n  \"weeks\": 50,\n  \"weekly_payment\": 1100000\n}",
+					"raw": "{\n  \"amount\": 110000\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -114,13 +114,15 @@
 					}
 				},
 				"url": {
-					"raw": "localhost:8080/loans",
+					"raw": "localhost:8080/loans/1/payments",
 					"host": [
 						"localhost"
 					],
 					"port": "8080",
 					"path": [
-						"loans"
+						"loans",
+						"1",
+						"payments"
 					]
 				}
 			},

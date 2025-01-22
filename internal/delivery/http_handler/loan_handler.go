@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/astaxie/beego/validation"
 	"github.com/labstack/echo/v4"
 	"test-billing/internal/domain"
 )
@@ -19,6 +20,19 @@ func (h Handler) CreateLoan(c echo.Context) (err error) {
 	err = c.Bind(&loan)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, "Invalid request payload")
+	}
+
+	//general field validation
+	valid := validation.Validation{}
+	valid.Required(loan.PrincipalAmount, "principal_amount")
+	valid.Min(loan.CustomerID, 1, "customer_id")
+	valid.Min(loan.Weeks, 1, "weeks")
+	valid.Min(loan.InterestRate, 1, "interest_rate")
+
+	if valid.HasErrors() {
+		for _, errValidate := range valid.Errors {
+			return c.JSON(http.StatusUnauthorized, fmt.Sprintf("Failed to create loan : %v %v %v", errValidate.Key, errValidate.Value, errValidate.Message))
+		}
 	}
 
 	err = h.Opt.LoanService.CreateLoan(&loan)
@@ -82,6 +96,16 @@ func (h Handler) MakePayment(c echo.Context) (err error) {
 	err = c.Bind(&paymentReq)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, "Invalid request payload")
+	}
+
+	//general field validation
+	valid := validation.Validation{}
+	valid.Min(loanID, 1, "loan_id")
+
+	if valid.HasErrors() {
+		for _, errValidate := range valid.Errors {
+			return c.JSON(http.StatusUnauthorized, fmt.Sprintf("Failed to make payment : %v %v %v", errValidate.Key, errValidate.Value, errValidate.Message))
+		}
 	}
 
 	err = h.Opt.LoanService.MakePayment(loanID, paymentReq.Amount)
