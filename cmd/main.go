@@ -14,6 +14,7 @@ import (
 	"test-billing/internal/delivery/http_handler"
 	"test-billing/internal/repository"
 	"test-billing/internal/service"
+	"test-billing/pkg/queue"
 	"test-billing/pkg/utils"
 )
 
@@ -39,11 +40,21 @@ func main() {
 	}
 	dbPostgres.Connect()
 
+	// Initialize the notification queue with a buffer size of 100
+	q := queue.NewNotificationQueue(100)
+
+	// Start consumer workers (e.g., 3 workers)
+	q.StartConsumer(3)
+
+	// Ensure the queue is stopped gracefully on service shutdown
+	defer q.Stop()
+
 	//options
 	opt := options.Options{
 		Config:     conf,
 		Logger:     logrus.New(),
 		DBPostgres: dbPostgres,
+		Queue:      q,
 	}
 
 	//repositories

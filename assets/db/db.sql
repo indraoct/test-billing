@@ -51,23 +51,3 @@ CREATE TABLE public.payments (
 INSERT INTO public.customers (name, email, phone)
 VALUES ('John Doe', 'john.doe@example.com', '08123456789')
     RETURNING id; -- Returning ID to reference in further inserts
-
--- Assume the returned customer ID is 1 for this example
--- Insert a loan for the customer
-INSERT INTO public.loans (customer_id, principal_amount, interest_rate, weeks, weekly_payment, outstanding_balance, status)
-VALUES (1, 5000000, 10, 50, 110000, 5500000, 'Active')
-    RETURNING id; -- Returning ID to reference in further inserts
-
--- Assume the returned loan ID is 1 for this example
--- Insert repayment schedules for the loan
-DO $$
-DECLARE
-week INT;
-    due_date DATE := CURRENT_DATE;
-BEGIN
-FOR week IN 1..50 LOOP
-        INSERT INTO public.repaymentschedules (loan_id, week_number, due_date, status)
-        VALUES (1, week, due_date, 'Unpaid');
-        due_date := due_date + INTERVAL '7 days'; -- Increment due date by 7 days for each week
-END LOOP;
-END $$;

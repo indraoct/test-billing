@@ -2,7 +2,9 @@ package service
 
 import (
 	"errors"
+	"fmt"
 	"test-billing/commons/constants"
+	"test-billing/pkg/queue"
 	"time"
 
 	"test-billing/internal/domain"
@@ -107,6 +109,16 @@ func (s LoanService) MakePayment(loanID int, amount float64) (err error) {
 			if err != nil {
 				return err
 			}
+
+			// Enqueue a notification for successful payment
+			notification := queue.Notification{
+				CustomerID: loan.CustomerID,
+				LoanID:     loan.ID,
+				Message:    fmt.Sprintf("Your payment of IDR %v has been received. Thank you!", amount),
+				Timestamp:  time.Now(),
+			}
+			s.opt.Queue.Enqueue(notification)
+			s.opt.Logger.WithField("notification", notification).Info("Success sending notification")
 
 			return nil
 		}

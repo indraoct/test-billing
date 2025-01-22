@@ -35,8 +35,6 @@ func (h Handler) CreateLoan(c echo.Context) (err error) {
 // GetOutstanding handles fetching the outstanding balance of a loan
 func (h Handler) GetOutstanding(c echo.Context) (err error) {
 
-	fmt.Println("Test param", c.Param("id"))
-
 	loanID, _ := strconv.Atoi(c.Param("id"))
 	if loanID == 0 {
 		return c.JSON(http.StatusBadRequest, "Invalid loan id parameter")

@@ -1,12 +1,12 @@
 package domain
 
 type Loan struct {
-	ID                 int
-	CustomerID         int
-	PrincipalAmount    float64
-	InterestRate       float64
-	Weeks              int
-	WeeklyPayment      float64
-	OutstandingBalance float64
-	Status             string // Active, Paid, Delinquent
+	ID                 int     `json:"id"`
+	CustomerID         int     `json:"customer_id"`
+	PrincipalAmount    float64 `json:"principal_amount"`
+	InterestRate       float64 `json:"interest_rate"`
+	Weeks              int     `json:"weeks"`
+	WeeklyPayment      float64 `json:"weekly_payment"`
+	OutstandingBalance float64 `json:"outstanding_balance"`
+	Status             string  `json:"status"` // Active, Paid, Delinquent
 }
