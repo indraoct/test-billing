@@ -12,6 +12,7 @@ import (
 	"test-billing/commons/config"
 	"test-billing/commons/options"
 	"test-billing/internal/delivery/http_handler"
+	"test-billing/internal/delivery/job"
 	"test-billing/internal/repository"
 	"test-billing/internal/service"
 	"test-billing/pkg/queue"
@@ -82,6 +83,16 @@ func main() {
 			logrus.WithField("error", err).Error("Echo server has closed")
 			os.Exit(1)
 		}
+	}()
+
+	j := job.RepaymentScheduleJob{job.JobOptions{
+		Options:    opt,
+		Repository: repo,
+	}}
+
+	//running the job repayment notification concurrently
+	go func() {
+		j.Run()
 	}()
 
 	c := make(chan os.Signal, 1)

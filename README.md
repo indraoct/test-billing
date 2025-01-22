@@ -1,6 +1,19 @@
 # Loan Billing Engine
 For some purpose
 
+## How to Use this Backend Apps
+
+    1. Make sure you already install docker in your local computer
+    2. To run this just run this script : 
+```cmd
+    docker-compose up
+```
+    It will be run the go apps and dummy docker database (just for test). The Apps will run in port 8080 
+    and the database on port 5432 (postgres)
+    3. Before you run the workflow of system, you should read the "System Design for Loan Billing Engine" to know the big picture of this app.
+    4. There is postman collection on this application you can test it using postman.
+    5. For dummy data and authentication i just put 2 model auth (dummy) there are : admin-token and user-token. In this application i just prepare 1 customer : customer_id : John Doe (because i dont have may times to do this test)
+
 ## System Design for Loan Billing Engine
 
 ### 1. High-Level Architecture

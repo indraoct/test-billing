@@ -120,3 +120,38 @@ func (r LoanRepository) UpdateLoanOutstandingBalance(loanID int, outstandingBala
 	_, err := r.opt.DBPostgres.DB.Exec(query, outstandingBalance, loanID)
 	return err
 }
+
+// GetUpcomingRepayments fetches repayment schedules due within the given number of days.
+func (r LoanRepository) GetUpcomingRepayments(days int) ([]domain.RepaymentSchedule, error) {
+	query := `
+		SELECT 
+			rs.loan_id, 
+			l.customer_id, 
+			rs.due_date, 
+			l.weekly_payment 
+		FROM 
+			repaymentschedules rs
+		INNER JOIN 
+			loans l 
+		ON 
+			rs.loan_id = l.id
+		WHERE 
+			rs.due_date BETWEEN CURRENT_DATE AND CURRENT_DATE + $1::INTERVAL
+	`
+	rows, err := r.opt.DBPostgres.DB.Query(query, days)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var schedules []domain.RepaymentSchedule
+	for rows.Next() {
+		var schedule domain.RepaymentSchedule
+		if err = rows.Scan(&schedule.LoanID, &schedule.CustomerID, &schedule.DueDate, &schedule.WeeklyPayment); err != nil {
+			return nil, err
+		}
+		schedules = append(schedules, schedule)
+	}
+
+	return schedules, nil
+}
